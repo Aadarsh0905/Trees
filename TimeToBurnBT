@@ -1,0 +1,109 @@
+import java.util.*;
+
+/**
+ * Definition for a binary tree node.
+ * class TreeNode {
+ *     int data;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int val) {
+ *         data = val;
+ *         left = null;
+ *         right = null;
+ *     }
+ * }
+ */
+
+class Solution {
+
+    private static int findMaxDistance(
+            HashMap<TreeNode, TreeNode> parentMap,
+            TreeNode target) {
+
+        Queue<TreeNode> q = new LinkedList<>();
+        Set<TreeNode> visited = new HashSet<>();
+
+        q.offer(target);
+        visited.add(target);
+
+        int time = 0;
+
+        while (!q.isEmpty()) {
+            int size = q.size();
+            boolean burned = false;
+
+            for (int i = 0; i < size; i++) {
+                TreeNode node = q.poll();
+
+                // left child
+                if (node.left != null && !visited.contains(node.left)) {
+                    burned = true;
+                    visited.add(node.left);
+                    q.offer(node.left);
+                }
+
+                // right child
+                if (node.right != null && !visited.contains(node.right)) {
+                    burned = true;
+                    visited.add(node.right);
+                    q.offer(node.right);
+                }
+
+                // parent
+                TreeNode parent = parentMap.get(node);
+                if (parent != null && !visited.contains(parent)) {
+                    burned = true;
+                    visited.add(parent);
+                    q.offer(parent);
+                }
+            }
+
+            if (burned) time++;
+        }
+
+        return time;
+    }
+
+    private static TreeNode bfsToMapParents(
+            TreeNode root,
+            HashMap<TreeNode, TreeNode> parentMap,
+            int start) {
+
+        Queue<TreeNode> q = new LinkedList<>();
+        q.offer(root);
+
+        TreeNode target = null;
+
+        while (!q.isEmpty()) {
+            TreeNode node = q.poll();
+
+            if (node.data == start) {
+                target = node;
+            }
+
+            if (node.left != null) {
+                parentMap.put(node.left, node);
+                q.offer(node.left);
+            }
+
+            if (node.right != null) {
+                parentMap.put(node.right, node);
+                q.offer(node.right);
+            }
+        }
+
+        return target;
+    }
+
+    public static int timeToBurnTree(TreeNode root, int start) {
+        if (root == null) return 0;
+
+        HashMap<TreeNode, TreeNode> parentMap = new HashMap<>();
+
+        TreeNode target = bfsToMapParents(root, parentMap, start);
+
+        if (target == null) return 0;
+
+        return findMaxDistance(parentMap, target);
+    }
+}
